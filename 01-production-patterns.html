@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Production Patterns — MokshPath Explainers</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --orange:#E87A2E;--orange-dark:#D06A20;--orange-light:#F5943E;--orange-glow:rgba(232,122,46,0.12);
+  --navy:#2B2D42;--navy-dark:#1A1B2E;
+  --bg:#F3EDE7;--bg-card:#FFFFFF;--bg-light:#F9F5F0;
+  --text-primary:#2B2D42;--text-secondary:#6B6D7B;--text-muted:#9597A6;
+  --border:#E5DDD4;--green:#4CAF50;--green-light:#E8F5E9;
+  --red:#E25555;--blue:#4285F4;--purple:#7C5CFF;
+  --shadow-sm:0 2px 8px rgba(43,45,66,0.06);
+  --shadow-md:0 8px 24px rgba(43,45,66,0.08);
+  --shadow-lg:0 16px 48px rgba(43,45,66,0.12);
+  --radius:14px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text-primary);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── Top bar with logo ── */
+.topbar{background:var(--bg-card);border-bottom:1px solid var(--border);padding:.9rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50;box-shadow:var(--shadow-sm)}
+.brand{display:flex;align-items:center;gap:.7rem}
+.brand-text{display:flex;flex-direction:column;line-height:1.15}
+.brand-name{font-family:'DM Serif Display',serif;font-size:1.15rem;color:var(--navy)}
+.brand-name em{font-style:normal;color:var(--orange)}
+.brand-tag{font-size:.62rem;color:var(--text-muted);font-weight:500;letter-spacing:.02em;text-transform:uppercase}
+.logo-img{width:46px;height:46px;object-fit:contain}
+
+/* ── Hero ── */
+.hero{padding:3rem 2rem 1.5rem;text-align:center;max-width:880px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:.45rem;padding:.4rem 1rem;border-radius:50px;background:var(--orange-glow);color:var(--orange);font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:1.2rem}
+.hero-badge .dot{width:7px;height:7px;border-radius:50%;background:var(--orange);animation:pulse 2s infinite}
+.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(1.9rem,3.6vw,2.7rem);line-height:1.15;color:var(--navy);margin-bottom:.75rem}
+.hero h1 em{font-style:normal;color:var(--orange)}
+.hero-sub{font-size:1rem;color:var(--text-secondary);line-height:1.65;max-width:580px;margin:0 auto}
+
+/* ── Sections ── */
+section.lesson{padding:2.5rem 2rem;max-width:1100px;margin:0 auto}
+.lesson-header{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem}
+.lesson-num{flex-shrink:0;width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--orange),var(--orange-light));color:#fff;display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:1.3rem;box-shadow:0 6px 16px rgba(232,122,46,.3)}
+.lesson-meta{flex:1}
+.lesson-eyebrow{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--orange);margin-bottom:.2rem}
+.lesson-title{font-family:'DM Serif Display',serif;font-size:1.55rem;color:var(--navy);line-height:1.2}
+
+.lesson-card{background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden;display:grid;grid-template-columns:1.15fr .85fr;min-height:440px}
+@media (max-width:880px){.lesson-card{grid-template-columns:1fr}}
+
+.stage{position:relative;background:var(--bg-light);border-right:1px solid var(--border);padding:1.5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:440px;overflow:hidden}
+@media (max-width:880px){.stage{border-right:none;border-bottom:1px solid var(--border)}}
+.stage svg{width:100%;height:auto;max-width:480px;max-height:380px}
+
+.story{padding:1.6rem 1.8rem;display:flex;flex-direction:column}
+.story-step-pill{display:inline-flex;width:fit-content;align-items:center;gap:.4rem;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.7rem}
+.story-step-pill .pill-num{background:var(--orange-glow);color:var(--orange);padding:.2rem .55rem;border-radius:50px;font-size:.65rem}
+.story h3{font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--navy);line-height:1.25;margin-bottom:.7rem;min-height:3rem}
+.story p{font-size:.92rem;color:var(--text-secondary);line-height:1.65;margin-bottom:.9rem}
+.story-key{background:var(--bg-light);border-left:3px solid var(--orange);border-radius:var(--radius-sm);padding:.7rem .9rem;font-size:.82rem;color:var(--text-primary);line-height:1.55;margin-bottom:1rem}
+.story-key strong{color:var(--orange);display:block;font-size:.65rem;letter-spacing:.07em;text-transform:uppercase;margin-bottom:.2rem;font-weight:700}
+
+.controls{margin-top:auto;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;padding-top:1rem;border-top:1px solid var(--border)}
+.step-dots{display:flex;gap:.4rem;flex:1}
+.step-dot{width:24px;height:4px;border-radius:50px;background:var(--border);cursor:pointer;transition:background .25s}
+.step-dot.active{background:var(--orange)}
+.step-dot.done{background:var(--orange-light)}
+.btn{display:inline-flex;align-items:center;gap:.35rem;padding:.5rem 1rem;border-radius:8px;font-size:.78rem;font-weight:600;border:none;cursor:pointer;font-family:inherit;transition:all .2s}
+.btn-fill{background:var(--orange);color:#fff}
+.btn-fill:hover{background:var(--orange-dark);transform:translateY(-1px);box-shadow:0 4px 16px rgba(232,122,46,.3)}
+.btn-fill:disabled{background:var(--border);color:var(--text-muted);cursor:not-allowed;transform:none;box-shadow:none}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--text-secondary)}
+.btn-ghost:hover{border-color:var(--orange);color:var(--orange)}
+.btn-ghost:disabled{opacity:.5;cursor:not-allowed}
+
+/* ── Animation helpers ── */
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.6}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes dash{to{stroke-dashoffset:0}}
+@keyframes packet-flow{0%{offset-distance:0%;opacity:0}10%{opacity:1}90%{opacity:1}100%{offset-distance:100%;opacity:0}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes bounce-in{0%{transform:scale(0);opacity:0}60%{transform:scale(1.1);opacity:1}100%{transform:scale(1)}}
+
+.fade-in{animation:fadeUp .5s ease both}
+
+/* SVG element states (controlled via class on root SVG group) */
+.svg-node{transition:opacity .4s ease, transform .4s ease}
+.svg-node.hidden{opacity:0}
+.svg-node.dim{opacity:.25}
+
+.flow-line{stroke-dasharray:6 4;animation:dash 1s linear infinite;animation-direction:reverse}
+.flow-packet{animation:packet-flow 2s linear infinite}
+.heartbeat{animation:pulse 1.6s ease-in-out infinite;transform-origin:center}
+
+/* Code chip */
+.code-chip{display:inline-block;background:var(--navy-dark);color:#fff;font-family:'JetBrains Mono',monospace;font-size:.72rem;padding:.15rem .45rem;border-radius:4px}
+
+/* Footer */
+.lesson-footer{text-align:center;padding:2rem 1rem 3rem;color:var(--text-muted);font-size:.8rem}
+.lesson-footer a{color:var(--orange);text-decoration:none;font-weight:600}
+
+/* Concept-strip below stage on stage 0 */
+.intro-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;width:100%;margin-top:1rem}
+.intro-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.7rem;text-align:center}
+.intro-card-num{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--orange);line-height:1}
+.intro-card-label{font-size:.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-top:.3rem}
+
+</style>
+</head>
+<body>
+
+<!-- Top bar with logo on the right -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-text">
+      <span class="brand-name">Moksh<em>Path</em></span>
+      <span class="brand-tag">Explainer Series · Lesson 1</span>
+    </div>
+  </div>
+  <img src="hero.svg" alt="MokshPath" class="logo-img">
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge"><span class="dot"></span>Production Patterns</div>
+  <h1>Building AI systems that <em>stay alive</em> in the real world</h1>
+  <p class="hero-sub">A demo running on your laptop is a beginning. Production is where things break at 3 a.m. — and where three patterns separate hobby projects from systems you can trust: <strong>observability, error recovery, and multi-agent structuring</strong>. Let's watch each one come alive, step by step.</p>
+</section>
+
+<!-- ═══════════════ LESSON 1: OBSERVABILITY ═══════════════ -->
+<section class="lesson">
+  <div class="lesson-header">
+    <div class="lesson-num">1</div>
+    <div class="lesson-meta">
+      <div class="lesson-eyebrow">Pattern One</div>
+      <div class="lesson-title">Observability — seeing inside the black box</div>
+    </div>
+  </div>
+
+  <div class="lesson-card" id="card-obs">
+    <div class="stage" id="stage-obs">
+      <svg viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+        <!-- The Box: the agent -->
+        <g id="obs-box">
+          <rect x="180" y="150" width="140" height="100" rx="14" fill="var(--navy-dark)"/>
+          <text x="250" y="195" text-anchor="middle" font-family="DM Serif Display" font-size="20" fill="#fff">Agent</text>
+          <text x="250" y="220" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" fill="#F5943E">your AI system</text>
+        </g>
+
+        <!-- Step 1: User asks -->
+        <g id="obs-step1" class="svg-node hidden">
+          <circle cx="60" cy="200" r="22" fill="#fff" stroke="var(--orange)" stroke-width="2"/>
+          <text x="60" y="205" text-anchor="middle" font-size="16">👤</text>
+          <path d="M85 200 L175 200" stroke="var(--orange)" stroke-width="2.5" fill="none" marker-end="url(#arrow-orange)"/>
+          <text x="130" y="190" text-anchor="middle" font-size="10" fill="var(--text-secondary)" font-weight="600">"help me..."</text>
+        </g>
+
+        <!-- Step 2: Question mark over box (you can't see inside) -->
+        <g id="obs-step2" class="svg-node hidden">
+          <text x="250" y="125" text-anchor="middle" font-size="34" fill="var(--red)">?</text>
+          <text x="250" y="290" text-anchor="middle" font-size="11" fill="var(--text-secondary)" font-style="italic">what's it doing in there?</text>
+        </g>
+
+        <!-- Step 3: Logs streaming out the bottom -->
+        <g id="obs-step3" class="svg-node hidden">
+          <rect x="155" y="280" width="190" height="22" rx="4" fill="#fff" stroke="var(--border)"/>
+          <text x="165" y="295" font-family="JetBrains Mono" font-size="9" fill="var(--text-primary)">[12:04:11] thought: search docs</text>
+          <rect x="155" y="306" width="190" height="22" rx="4" fill="#fff" stroke="var(--border)"/>
+          <text x="165" y="321" font-family="JetBrains Mono" font-size="9" fill="var(--text-primary)">[12:04:12] tool: retriever.k=5</text>
+          <rect x="155" y="332" width="190" height="22" rx="4" fill="#fff" stroke="var(--border)"/>
+          <text x="165" y="347" font-family="JetBrains Mono" font-size="9" fill="var(--text-primary)">[12:04:14] tokens: 312 · ms: 840</text>
+        </g>
+
+        <!-- Step 4: Dashboards -->
+        <g id="obs-step4" class="svg-node hidden">
+          <!-- latency chart -->
+          <rect x="370" y="60" width="110" height="70" rx="8" fill="#fff" stroke="var(--border)"/>
+          <text x="378" y="76" font-size="9" fill="var(--text-muted)" font-weight="700">LATENCY</text>
+          <polyline points="378,118 395,108 412,112 428,98 445,104 462,90 478,95"
+                    fill="none" stroke="var(--orange)" stroke-width="2"/>
+          <!-- cost chart -->
+          <rect x="370" y="140" width="110" height="70" rx="8" fill="#fff" stroke="var(--border)"/>
+          <text x="378" y="156" font-size="9" fill="var(--text-muted)" font-weight="700">COST / RUN</text>
+          <rect x="380" y="180" width="10" height="22" fill="var(--green)"/>
+          <rect x="395" y="172" width="10" height="30" fill="var(--green)"/>
+          <rect x="410" y="166" width="10" height="36" fill="var(--orange)"/>
+          <rect x="425" y="178" width="10" height="24" fill="var(--green)"/>
+          <rect x="440" y="170" width="10" height="32" fill="var(--orange)"/>
+          <rect x="455" y="184" width="10" height="18" fill="var(--green)"/>
+          <!-- errors -->
+          <rect x="370" y="220" width="110" height="70" rx="8" fill="#fff" stroke="var(--border)"/>
+          <text x="378" y="236" font-size="9" fill="var(--text-muted)" font-weight="700">ERRORS</text>
+          <text x="425" y="265" text-anchor="middle" font-family="DM Serif Display" font-size="22" fill="var(--red)">3</text>
+          <text x="425" y="280" text-anchor="middle" font-size="9" fill="var(--text-muted)">last hour</text>
+
+          <!-- connecting line from agent to dashboards -->
+          <path d="M325 200 Q350 200 365 100" stroke="var(--orange-light)" stroke-width="1.5" fill="none" stroke-dasharray="3 3"/>
+          <path d="M325 200 Q350 200 365 175" stroke="var(--orange-light)" stroke-width="1.5" fill="none" stroke-dasharray="3 3"/>
+          <path d="M325 220 Q350 230 365 255" stroke="var(--orange-light)" stroke-width="1.5" fill="none" stroke-dasharray="3 3"/>
+        </g>
+
+        <!-- arrows defs -->
+        <defs>
+          <marker id="arrow-orange" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L9,3 z" fill="var(--orange)"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="story">
+      <div class="story-step-pill"><span class="pill-num" id="obs-pill">1 / 4</span> <span>Walkthrough</span></div>
+      <h3 id="obs-title">Why can't we just trust the model?</h3>
+      <p id="obs-body">An AI agent looks like a black box from the outside. Input goes in, output comes out, and when something breaks, you have no idea why. Observability is the practice of opening that box — instrumenting your agent so its inner life becomes visible.</p>
+      <div class="story-key"><strong>Key idea</strong><span id="obs-key">If you can't see it, you can't fix it. Treat your agent like a patient: you need vital signs, not guesses.</span></div>
+      <div class="controls">
+        <div class="step-dots" id="obs-dots"></div>
+        <button class="btn btn-ghost" id="obs-prev">← Prev</button>
+        <button class="btn btn-fill" id="obs-next">Next →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ LESSON 2: ERROR RECOVERY ═══════════════ -->
+<section class="lesson">
+  <div class="lesson-header">
+    <div class="lesson-num">2</div>
+    <div class="lesson-meta">
+      <div class="lesson-eyebrow">Pattern Two</div>
+      <div class="lesson-title">Error Recovery — graceful failure, not catastrophe</div>
+    </div>
+  </div>
+
+  <div class="lesson-card" id="card-err">
+    <div class="stage" id="stage-err">
+      <svg viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+        <!-- The Agent -->
+        <g id="err-agent">
+          <rect x="60" y="170" width="110" height="70" rx="12" fill="var(--navy-dark)"/>
+          <text x="115" y="200" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#fff">Agent</text>
+          <text x="115" y="220" text-anchor="middle" font-size="10" fill="#F5943E">your code</text>
+        </g>
+
+        <!-- External tool -->
+        <g id="err-tool">
+          <rect x="330" y="170" width="110" height="70" rx="12" fill="#fff" stroke="var(--border)" stroke-width="2"/>
+          <text x="385" y="200" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="var(--navy)">API</text>
+          <text x="385" y="220" text-anchor="middle" font-size="10" fill="var(--text-secondary)">external service</text>
+        </g>
+
+        <!-- Step 1: happy path -->
+        <g id="err-step1" class="svg-node hidden">
+          <path d="M170 205 L330 205" stroke="var(--green)" stroke-width="2.5" fill="none" marker-end="url(#arr-green)"/>
+          <text x="250" y="195" text-anchor="middle" font-size="11" fill="var(--green)" font-weight="600">call →</text>
+          <path d="M330 215 L170 215" stroke="var(--green)" stroke-width="2.5" fill="none" marker-end="url(#arr-green-back)"/>
+          <text x="250" y="230" text-anchor="middle" font-size="11" fill="var(--green)" font-weight="600">← 200 OK</text>
+        </g>
+
+        <!-- Step 2: failure -->
+        <g id="err-step2" class="svg-node hidden">
+          <path d="M170 205 L330 205" stroke="var(--red)" stroke-width="2.5" fill="none" marker-end="url(#arr-red)"/>
+          <text x="250" y="195" text-anchor="middle" font-size="11" fill="var(--red)" font-weight="600">call →</text>
+          <text x="250" y="235" text-anchor="middle" font-size="14" fill="var(--red)">💥 500 Error</text>
+        </g>
+
+        <!-- Step 3: retry with backoff -->
+        <g id="err-step3" class="svg-node hidden">
+          <text x="250" y="100" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="var(--navy)">Retry with backoff</text>
+          <circle cx="200" cy="130" r="14" fill="var(--orange-glow)" stroke="var(--orange)"/>
+          <text x="200" y="135" text-anchor="middle" font-size="10" fill="var(--orange)" font-weight="700">1s</text>
+          <circle cx="240" cy="130" r="16" fill="var(--orange-glow)" stroke="var(--orange)"/>
+          <text x="240" y="135" text-anchor="middle" font-size="10" fill="var(--orange)" font-weight="700">2s</text>
+          <circle cx="284" cy="130" r="18" fill="var(--orange-glow)" stroke="var(--orange)"/>
+          <text x="284" y="135" text-anchor="middle" font-size="10" fill="var(--orange)" font-weight="700">4s</text>
+          <circle cx="330" cy="130" r="20" fill="var(--orange-glow)" stroke="var(--orange)"/>
+          <text x="330" y="135" text-anchor="middle" font-size="10" fill="var(--orange)" font-weight="700">8s</text>
+          <path d="M170 205 L330 205" stroke="var(--orange)" stroke-width="2.5" fill="none" marker-end="url(#arr-orange)" stroke-dasharray="5 4"/>
+          <text x="250" y="260" text-anchor="middle" font-size="10" fill="var(--text-secondary)" font-style="italic">wait, then try again — twice as long each time</text>
+        </g>
+
+        <!-- Step 4: circuit breaker -->
+        <g id="err-step4" class="svg-node hidden">
+          <!-- shield icon -->
+          <path d="M250 90 L280 100 L280 130 Q280 155 250 170 Q220 155 220 130 L220 100 Z"
+                fill="var(--red)" opacity=".15" stroke="var(--red)" stroke-width="2"/>
+          <text x="250" y="135" text-anchor="middle" font-size="22">⛔</text>
+          <text x="250" y="190" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="var(--navy)">Circuit Breaker tripped</text>
+          <text x="250" y="207" text-anchor="middle" font-size="10" fill="var(--text-secondary)">5 failures → stop calling for 60s</text>
+
+          <!-- fallback path -->
+          <path d="M115 240 Q115 290 230 320" stroke="var(--green)" stroke-width="2" fill="none" stroke-dasharray="5 3" marker-end="url(#arr-green)"/>
+          <rect x="230" y="305" width="160" height="36" rx="8" fill="var(--green-light)" stroke="var(--green)"/>
+          <text x="310" y="320" text-anchor="middle" font-size="11" fill="var(--green)" font-weight="700">Fallback response</text>
+          <text x="310" y="333" text-anchor="middle" font-size="9" fill="var(--text-secondary)">cached or simpler answer</text>
+        </g>
+
+        <defs>
+          <marker id="arr-green" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--green)"/></marker>
+          <marker id="arr-green-back" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--green)"/></marker>
+          <marker id="arr-red" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--red)"/></marker>
+          <marker id="arr-orange" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--orange)"/></marker>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="story">
+      <div class="story-step-pill"><span class="pill-num" id="err-pill">1 / 4</span> <span>Walkthrough</span></div>
+      <h3 id="err-title">The happy path is a lie</h3>
+      <p id="err-body">In a perfect world, every API call returns 200 OK and every model produces valid JSON. In reality, networks flake, services time out, and models occasionally hallucinate. Error recovery is the art of expecting the worst — and absorbing it without crashing.</p>
+      <div class="story-key"><strong>Key idea</strong><span id="err-key">Don't ask "will it fail?" Ask "how will I respond when it does?"</span></div>
+      <div class="controls">
+        <div class="step-dots" id="err-dots"></div>
+        <button class="btn btn-ghost" id="err-prev">← Prev</button>
+        <button class="btn btn-fill" id="err-next">Next →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ LESSON 3: MULTI-AGENT REPO ═══════════════ -->
+<section class="lesson">
+  <div class="lesson-header">
+    <div class="lesson-num">3</div>
+    <div class="lesson-meta">
+      <div class="lesson-eyebrow">Pattern Three</div>
+      <div class="lesson-title">Multi-Agent Repo Structuring — order in a crowd</div>
+    </div>
+  </div>
+
+  <div class="lesson-card" id="card-rep">
+    <div class="stage" id="stage-rep">
+      <svg viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+        <!-- Step 1: messy single file -->
+        <g id="rep-step1" class="svg-node hidden">
+          <rect x="120" y="80" width="260" height="240" rx="12" fill="#fff" stroke="var(--border)" stroke-width="2"/>
+          <text x="250" y="105" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="var(--navy)" font-weight="700">main.py</text>
+          <line x1="120" y1="115" x2="380" y2="115" stroke="var(--border)"/>
+          <!-- tangled code lines -->
+          <text x="135" y="135" font-family="JetBrains Mono" font-size="9" fill="var(--text-secondary)">def agent_one(): ...</text>
+          <text x="135" y="150" font-family="JetBrains Mono" font-size="9" fill="var(--text-secondary)">def helper(): ...</text>
+          <text x="135" y="165" font-family="JetBrains Mono" font-size="9" fill="var(--text-secondary)">def agent_two(): ...</text>
+          <text x="135" y="180" font-family="JetBrains Mono" font-size="9" fill="var(--text-secondary)">PROMPT_1 = "..."</text>
+          <text x="135" y="195" font-family="JetBrains Mono" font-size="9" fill="var(--text-secondary)">def call_api(): ...</text>
+          <text x="135" y="210" font-family="JetBrains Mono" font-size="9" fill="var(--text-secondary)">def agent_three(): ...</text>
+          <text x="135" y="225" font-family="JetBrains Mono" font-size="9" fill="var(--text-secondary)">PROMPT_2 = "..."</text>
+          <text x="135" y="240" font-family="JetBrains Mono" font-size="9" fill="var(--text-secondary)">def helper_two(): ...</text>
+          <text x="135" y="255" font-family="JetBrains Mono" font-size="9" fill="var(--text-secondary)">if __name__ == ...</text>
+          <text x="135" y="270" font-family="JetBrains Mono" font-size="9" fill="var(--text-secondary)">    run_all()</text>
+          <text x="250" y="305" text-anchor="middle" font-size="11" fill="var(--red)" font-weight="700">😵 1,200 lines and growing</text>
+        </g>
+
+        <!-- Step 2: tree structure -->
+        <g id="rep-step2" class="svg-node hidden">
+          <text x="60" y="80" font-family="JetBrains Mono" font-size="11" fill="var(--navy)" font-weight="700">📁 my_agents/</text>
+          <text x="80" y="105" font-family="JetBrains Mono" font-size="10" fill="var(--text-secondary)">├── 📁 agents/</text>
+          <text x="100" y="123" font-family="JetBrains Mono" font-size="10" fill="var(--orange)">│   ├── researcher.py</text>
+          <text x="100" y="141" font-family="JetBrains Mono" font-size="10" fill="var(--orange)">│   ├── writer.py</text>
+          <text x="100" y="159" font-family="JetBrains Mono" font-size="10" fill="var(--orange)">│   └── critic.py</text>
+          <text x="80" y="183" font-family="JetBrains Mono" font-size="10" fill="var(--text-secondary)">├── 📁 prompts/</text>
+          <text x="100" y="201" font-family="JetBrains Mono" font-size="10" fill="var(--text-secondary)">│   ├── research.txt</text>
+          <text x="100" y="219" font-family="JetBrains Mono" font-size="10" fill="var(--text-secondary)">│   └── critique.txt</text>
+          <text x="80" y="243" font-family="JetBrains Mono" font-size="10" fill="var(--text-secondary)">├── 📁 tools/</text>
+          <text x="80" y="265" font-family="JetBrains Mono" font-size="10" fill="var(--text-secondary)">├── 📁 tests/</text>
+          <text x="80" y="287" font-family="JetBrains Mono" font-size="10" fill="var(--text-secondary)">├── config.yaml</text>
+          <text x="80" y="309" font-family="JetBrains Mono" font-size="10" fill="var(--text-secondary)">└── orchestrator.py</text>
+          <text x="250" y="345" text-anchor="middle" font-size="11" fill="var(--green)" font-weight="700">✅ each piece in its place</text>
+        </g>
+
+        <!-- Step 3: orchestration -->
+        <g id="rep-step3" class="svg-node hidden">
+          <!-- orchestrator at top -->
+          <rect x="200" y="60" width="100" height="50" rx="10" fill="var(--orange)"/>
+          <text x="250" y="82" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="#fff">Orchestrator</text>
+          <text x="250" y="100" text-anchor="middle" font-size="9" fill="#fff" opacity=".85">routes the work</text>
+          <!-- three agents below -->
+          <rect x="60" y="200" width="110" height="60" rx="10" fill="var(--navy-dark)"/>
+          <text x="115" y="223" text-anchor="middle" font-family="DM Serif Display" font-size="12" fill="#fff">Researcher</text>
+          <text x="115" y="245" text-anchor="middle" font-size="9" fill="#F5943E">finds facts</text>
+          <rect x="195" y="200" width="110" height="60" rx="10" fill="var(--navy-dark)"/>
+          <text x="250" y="223" text-anchor="middle" font-family="DM Serif Display" font-size="12" fill="#fff">Writer</text>
+          <text x="250" y="245" text-anchor="middle" font-size="9" fill="#F5943E">drafts text</text>
+          <rect x="330" y="200" width="110" height="60" rx="10" fill="var(--navy-dark)"/>
+          <text x="385" y="223" text-anchor="middle" font-family="DM Serif Display" font-size="12" fill="#fff">Critic</text>
+          <text x="385" y="245" text-anchor="middle" font-size="9" fill="#F5943E">reviews</text>
+          <!-- lines -->
+          <path d="M230 110 Q200 150 115 200" stroke="var(--orange)" stroke-width="2" fill="none" marker-end="url(#arr-orange-r)"/>
+          <path d="M250 110 L250 200" stroke="var(--orange)" stroke-width="2" fill="none" marker-end="url(#arr-orange-r)"/>
+          <path d="M270 110 Q300 150 385 200" stroke="var(--orange)" stroke-width="2" fill="none" marker-end="url(#arr-orange-r)"/>
+          <!-- shared services pill -->
+          <rect x="90" y="310" width="320" height="40" rx="20" fill="var(--bg-light)" stroke="var(--border)"/>
+          <text x="250" y="328" text-anchor="middle" font-size="10" fill="var(--text-muted)" font-weight="700">SHARED · prompts · tools · config · tests</text>
+          <text x="250" y="343" text-anchor="middle" font-size="9" fill="var(--text-secondary)">every agent uses the same building blocks</text>
+        </g>
+
+        <defs>
+          <marker id="arr-orange-r" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--orange)"/></marker>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="story">
+      <div class="story-step-pill"><span class="pill-num" id="rep-pill">1 / 3</span> <span>Walkthrough</span></div>
+      <h3 id="rep-title">When one file becomes a swamp</h3>
+      <p id="rep-body">Most AI projects start as a single Python file. That works — until you have three agents, five prompts, two APIs, and nobody remembers which function does what. The first sign of trouble: you scroll forever just to find anything.</p>
+      <div class="story-key"><strong>Key idea</strong><span id="rep-key">Structure isn't bureaucracy — it's the map that lets a team find things at midnight.</span></div>
+      <div class="controls">
+        <div class="step-dots" id="rep-dots"></div>
+        <button class="btn btn-ghost" id="rep-prev">← Prev</button>
+        <button class="btn btn-fill" id="rep-next">Next →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="lesson-footer">
+  Lesson 1 of 4 · <a href="#">Up next: FastAPI for serving AI</a>
+</div>
+
+<script>
+/* ═══════════════ Lesson controller ═══════════════ */
+function makeLesson({prefix, steps}){
+  const dotsEl = document.getElementById(prefix+'-dots');
+  const titleEl = document.getElementById(prefix+'-title');
+  const bodyEl = document.getElementById(prefix+'-body');
+  const keyEl = document.getElementById(prefix+'-key');
+  const pillEl = document.getElementById(prefix+'-pill');
+  const prevBtn = document.getElementById(prefix+'-prev');
+  const nextBtn = document.getElementById(prefix+'-next');
+  const stage = document.getElementById('stage-'+prefix);
+  let idx = 0;
+
+  // build dots
+  steps.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'step-dot' + (i===0 ? ' active' : '');
+    d.addEventListener('click', ()=>go(i));
+    dotsEl.appendChild(d);
+  });
+
+  function render(){
+    const s = steps[idx];
+    titleEl.textContent = s.title;
+    bodyEl.textContent = s.body;
+    keyEl.textContent = s.key;
+    pillEl.textContent = `${idx+1} / ${steps.length}`;
+    titleEl.classList.remove('fade-in'); void titleEl.offsetWidth; titleEl.classList.add('fade-in');
+    bodyEl.classList.remove('fade-in'); void bodyEl.offsetWidth; bodyEl.classList.add('fade-in');
+
+    // dots
+    [...dotsEl.children].forEach((d,i)=>{
+      d.className = 'step-dot' + (i===idx ? ' active' : i<idx ? ' done' : '');
+    });
+
+    // svg nodes: show ones with id matching current and previous, hide later
+    steps.forEach((step, i)=>{
+      step.showIds.forEach(id=>{
+        const el = stage.querySelector('#'+id);
+        if(!el) return;
+        if(i <= idx) el.classList.remove('hidden'); else el.classList.add('hidden');
+      });
+      step.hideIds && step.hideIds.forEach(id=>{
+        const el = stage.querySelector('#'+id);
+        if(!el) return;
+        if(i <= idx) el.classList.add('hidden'); else el.classList.remove('hidden');
+      });
+    });
+
+    prevBtn.disabled = idx === 0;
+    nextBtn.textContent = idx === steps.length-1 ? '↺ Restart' : 'Next →';
+  }
+  function go(i){ idx = (i+steps.length)%steps.length; render(); }
+  prevBtn.addEventListener('click', ()=>go(idx-1));
+  nextBtn.addEventListener('click', ()=>{
+    if(idx === steps.length-1) go(0); else go(idx+1);
+  });
+  render();
+}
+
+/* ── Observability steps ── */
+makeLesson({
+  prefix: 'obs',
+  steps: [
+    {
+      title: "Why can't we just trust the model?",
+      body: "An AI agent looks like a black box from the outside. Input goes in, output comes out — and when something breaks, you have no idea why. Observability is the practice of opening that box so its inner life becomes visible.",
+      key: "If you can't see it, you can't fix it. Treat your agent like a patient: vital signs, not guesses.",
+      showIds: ['obs-box']
+    },
+    {
+      title: "A user asks the agent something",
+      body: "Imagine a customer types a question. The agent runs — it picks tools, makes API calls, generates tokens. From the outside, all you see is a request going in.",
+      key: "Without instrumentation, this is the only thing you'll ever know about what happened.",
+      showIds: ['obs-box','obs-step1']
+    },
+    {
+      title: "And… what just happened?",
+      body: "Something inside the agent went wrong, or it was slow, or it cost too much. But you have zero visibility. The classic production nightmare: 'it works on my machine' meets 'I have no idea why it failed.'",
+      key: "Every minute spent debugging blind is a minute users wait.",
+      showIds: ['obs-box','obs-step1','obs-step2']
+    },
+    {
+      title: "Step one: structured logs",
+      body: "Add log lines at every meaningful step — which tool was called, how many tokens it used, how long each stage took. Each line is timestamped and structured so machines can read it too, not just humans.",
+      key: "Log like a flight recorder: too much data is recoverable; missing data isn't.",
+      showIds: ['obs-box','obs-step1','obs-step3'],
+      hideIds: ['obs-step2']
+    },
+    {
+      title: "Step two: dashboards & alerts",
+      body: "Pipe those logs into dashboards (tools like Grafana, Langfuse, or Datadog). Now you can watch latency, cost, and error rate in real time — and set alerts that page you when something drifts off normal.",
+      key: "Logs answer 'what happened?' Dashboards answer 'is everything still okay right now?'",
+      showIds: ['obs-box','obs-step1','obs-step3','obs-step4']
+    }
+  ]
+});
+
+/* ── Error recovery steps ── */
+makeLesson({
+  prefix: 'err',
+  steps: [
+    {
+      title: "The happy path is a lie",
+      body: "When you write code, you imagine every call succeeding. Reality has different ideas. Networks flake, services rate-limit you, models occasionally return malformed JSON.",
+      key: "Don't ask 'will it fail?' Ask 'how will I respond when it does?'",
+      showIds: ['err-agent','err-tool']
+    },
+    {
+      title: "When everything works",
+      body: "Best case: your agent calls the API, gets a clean 200 OK response, and moves on. Most calls really do look like this — which is exactly what makes the rare failure so dangerous. You forget to plan for it.",
+      key: "Every working call is a lesson in complacency.",
+      showIds: ['err-agent','err-tool','err-step1']
+    },
+    {
+      title: "And then… the error",
+      body: "The API returns a 500. Or times out. Or the rate limiter kicks in. Without recovery logic, your agent crashes — and so does whatever was depending on it.",
+      key: "One unhandled exception can take down an entire production system.",
+      showIds: ['err-agent','err-tool','err-step2'],
+      hideIds:['err-step1']
+    },
+    {
+      title: "Retry — but politely",
+      body: "Don't hammer the failing service. Wait, retry, wait longer, retry again. This is exponential backoff: each attempt doubles the wait. Often the problem is temporary and the second or third try succeeds.",
+      key: "Be patient with failing services. Hammering them rarely helps and often makes it worse.",
+      showIds: ['err-agent','err-tool','err-step3'],
+      hideIds:['err-step1','err-step2']
+    },
+    {
+      title: "Trip the circuit, serve a fallback",
+      body: "If retries keep failing, stop calling for a while — the circuit breaker pattern. Meanwhile, return something sensible: a cached answer, a simpler response, or a polite 'we're having trouble' message. The user gets *something*, not a crash.",
+      key: "Graceful degradation beats total failure every single time.",
+      showIds: ['err-agent','err-tool','err-step4'],
+      hideIds:['err-step1','err-step2','err-step3']
+    }
+  ]
+});
+
+/* ── Repo structure steps ── */
+makeLesson({
+  prefix: 'rep',
+  steps: [
+    {
+      title: "When one file becomes a swamp",
+      body: "Most projects begin as a single Python file. Three agents, five prompts, two APIs later, nobody can find anything. The first sign of trouble: you scroll forever just to locate the function you wrote last week.",
+      key: "A 1,200-line file isn't a project — it's a hostage situation.",
+      showIds: ['rep-step1']
+    },
+    {
+      title: "Split by responsibility",
+      body: "Organise by *what each piece does*. Agents go in their own folder, one file per agent. Prompts live in a `prompts/` folder as text files — not buried in code. Tools, tests, and config get their own homes too.",
+      key: "A good structure is one a new teammate can navigate in five minutes.",
+      showIds: ['rep-step2'],
+      hideIds:['rep-step1']
+    },
+    {
+      title: "An orchestrator coordinates the team",
+      body: "Each agent has a single, clear job — researcher, writer, critic. A separate orchestrator decides who runs when and passes results between them. Shared building blocks (prompts, tools, config) sit at the bottom so every agent uses the same versions.",
+      key: "Small agents with clear jobs, plus one coordinator, scales further than a single giant agent.",
+      showIds: ['rep-step3'],
+      hideIds:['rep-step1','rep-step2']
+    }
+  ]
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FastAPI for AI — MokshPath Explainers</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --orange:#E87A2E;--orange-dark:#D06A20;--orange-light:#F5943E;--orange-glow:rgba(232,122,46,0.12);
+  --navy:#2B2D42;--navy-dark:#1A1B2E;
+  --bg:#F3EDE7;--bg-card:#FFFFFF;--bg-light:#F9F5F0;
+  --text-primary:#2B2D42;--text-secondary:#6B6D7B;--text-muted:#9597A6;
+  --border:#E5DDD4;--green:#4CAF50;--green-light:#E8F5E9;
+  --red:#E25555;--blue:#4285F4;--teal:#009688;
+  --shadow-sm:0 2px 8px rgba(43,45,66,0.06);
+  --shadow-md:0 8px 24px rgba(43,45,66,0.08);
+  --shadow-lg:0 16px 48px rgba(43,45,66,0.12);
+  --radius:14px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text-primary);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+.topbar{background:var(--bg-card);border-bottom:1px solid var(--border);padding:.9rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50;box-shadow:var(--shadow-sm)}
+.brand-text{display:flex;flex-direction:column;line-height:1.15}
+.brand-name{font-family:'DM Serif Display',serif;font-size:1.15rem;color:var(--navy)}
+.brand-name em{font-style:normal;color:var(--orange)}
+.brand-tag{font-size:.62rem;color:var(--text-muted);font-weight:500;letter-spacing:.02em;text-transform:uppercase}
+.logo-img{width:46px;height:46px;object-fit:contain}
+
+.hero{padding:3rem 2rem 1.5rem;text-align:center;max-width:880px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:.45rem;padding:.4rem 1rem;border-radius:50px;background:var(--orange-glow);color:var(--orange);font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:1.2rem}
+.hero-badge .dot{width:7px;height:7px;border-radius:50%;background:var(--orange);animation:pulse 2s infinite}
+.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(1.9rem,3.6vw,2.7rem);line-height:1.15;color:var(--navy);margin-bottom:.75rem}
+.hero h1 em{font-style:normal;color:var(--orange)}
+.hero-sub{font-size:1rem;color:var(--text-secondary);line-height:1.65;max-width:580px;margin:0 auto}
+
+section.lesson{padding:2.5rem 2rem;max-width:1100px;margin:0 auto}
+.lesson-header{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem}
+.lesson-num{flex-shrink:0;width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--orange),var(--orange-light));color:#fff;display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:1.3rem;box-shadow:0 6px 16px rgba(232,122,46,.3)}
+.lesson-eyebrow{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--orange);margin-bottom:.2rem}
+.lesson-title{font-family:'DM Serif Display',serif;font-size:1.55rem;color:var(--navy);line-height:1.2}
+
+.lesson-card{background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden;display:grid;grid-template-columns:1.15fr .85fr;min-height:440px}
+@media (max-width:880px){.lesson-card{grid-template-columns:1fr}}
+
+.stage{position:relative;background:var(--bg-light);border-right:1px solid var(--border);padding:1.5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:440px;overflow:hidden}
+@media (max-width:880px){.stage{border-right:none;border-bottom:1px solid var(--border)}}
+.stage svg{width:100%;height:auto;max-width:480px;max-height:380px}
+
+.story{padding:1.6rem 1.8rem;display:flex;flex-direction:column}
+.story-step-pill{display:inline-flex;width:fit-content;align-items:center;gap:.4rem;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.7rem}
+.story-step-pill .pill-num{background:var(--orange-glow);color:var(--orange);padding:.2rem .55rem;border-radius:50px;font-size:.65rem}
+.story h3{font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--navy);line-height:1.25;margin-bottom:.7rem;min-height:3rem}
+.story p{font-size:.92rem;color:var(--text-secondary);line-height:1.65;margin-bottom:.9rem}
+.story-key{background:var(--bg-light);border-left:3px solid var(--orange);border-radius:var(--radius-sm);padding:.7rem .9rem;font-size:.82rem;color:var(--text-primary);line-height:1.55;margin-bottom:1rem}
+.story-key strong{color:var(--orange);display:block;font-size:.65rem;letter-spacing:.07em;text-transform:uppercase;margin-bottom:.2rem;font-weight:700}
+
+.controls{margin-top:auto;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;padding-top:1rem;border-top:1px solid var(--border)}
+.step-dots{display:flex;gap:.4rem;flex:1}
+.step-dot{width:24px;height:4px;border-radius:50px;background:var(--border);cursor:pointer;transition:background .25s}
+.step-dot.active{background:var(--orange)}
+.step-dot.done{background:var(--orange-light)}
+.btn{display:inline-flex;align-items:center;gap:.35rem;padding:.5rem 1rem;border-radius:8px;font-size:.78rem;font-weight:600;border:none;cursor:pointer;font-family:inherit;transition:all .2s}
+.btn-fill{background:var(--orange);color:#fff}
+.btn-fill:hover{background:var(--orange-dark);transform:translateY(-1px);box-shadow:0 4px 16px rgba(232,122,46,.3)}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--text-secondary)}
+.btn-ghost:hover{border-color:var(--orange);color:var(--orange)}
+.btn-ghost:disabled,.btn-fill:disabled{opacity:.4;cursor:not-allowed}
+
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.6}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes packet{0%{offset-distance:0%}100%{offset-distance:100%}}
+
+.fade-in{animation:fadeUp .5s ease both}
+.svg-node{transition:opacity .4s ease, transform .4s ease}
+.svg-node.hidden{opacity:0}
+
+.lesson-footer{text-align:center;padding:2rem 1rem 3rem;color:var(--text-muted);font-size:.8rem}
+.lesson-footer a{color:var(--orange);text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand-text">
+    <span class="brand-name">Moksh<em>Path</em></span>
+    <span class="brand-tag">Explainer Series · Lesson 2</span>
+  </div>
+  <img src="hero.svg" alt="MokshPath" class="logo-img">
+</header>
+
+<section class="hero">
+  <div class="hero-badge"><span class="dot"></span>FastAPI for AI</div>
+  <h1>Wrapping your AI model into a <em>real web service</em></h1>
+  <p class="hero-sub">An AI model in a Jupyter notebook is interesting. An AI model behind a clean HTTP endpoint that anyone can call is a <strong>product</strong>. FastAPI is the bridge: a Python web framework built for speed, type-safety, and AI workloads. Let's see the four moving parts.</p>
+</section>
+
+<!-- ═══════════════ LESSON 1: ENDPOINTS ═══════════════ -->
+<section class="lesson">
+  <div class="lesson-header">
+    <div class="lesson-num">1</div>
+    <div>
+      <div class="lesson-eyebrow">Concept One</div>
+      <div class="lesson-title">Endpoints — the doors into your service</div>
+    </div>
+  </div>
+
+  <div class="lesson-card">
+    <div class="stage" id="stage-ep">
+      <svg viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+        <!-- Step 1: server box only -->
+        <g id="ep-step1" class="svg-node hidden">
+          <rect x="160" y="130" width="180" height="140" rx="14" fill="var(--navy-dark)"/>
+          <text x="250" y="170" text-anchor="middle" font-family="DM Serif Display" font-size="16" fill="#fff">Your Server</text>
+          <text x="250" y="195" text-anchor="middle" font-size="11" fill="#F5943E">running FastAPI</text>
+          <rect x="180" y="215" width="140" height="38" rx="6" fill="var(--navy)"/>
+          <text x="250" y="240" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#F5943E">localhost:8000</text>
+        </g>
+
+        <!-- Step 2: endpoint doors -->
+        <g id="ep-step2" class="svg-node hidden">
+          <!-- door 1 -->
+          <rect x="40" y="80" width="120" height="42" rx="6" fill="#fff" stroke="var(--green)" stroke-width="2"/>
+          <text x="55" y="106" font-family="JetBrains Mono" font-size="11" fill="var(--green)" font-weight="700">GET</text>
+          <text x="95" y="106" font-family="JetBrains Mono" font-size="11" fill="var(--navy)">/health</text>
+          <path d="M160 101 L175 101" stroke="var(--green)" stroke-width="2" marker-end="url(#a-green)"/>
+          <!-- door 2 -->
+          <rect x="40" y="180" width="120" height="42" rx="6" fill="#fff" stroke="var(--orange)" stroke-width="2"/>
+          <text x="55" y="206" font-family="JetBrains Mono" font-size="11" fill="var(--orange)" font-weight="700">POST</text>
+          <text x="100" y="206" font-family="JetBrains Mono" font-size="11" fill="var(--navy)">/predict</text>
+          <path d="M160 201 L175 201" stroke="var(--orange)" stroke-width="2" marker-end="url(#a-orange)"/>
+          <!-- door 3 -->
+          <rect x="40" y="278" width="120" height="42" rx="6" fill="#fff" stroke="var(--blue)" stroke-width="2"/>
+          <text x="55" y="304" font-family="JetBrains Mono" font-size="11" fill="var(--blue)" font-weight="700">GET</text>
+          <text x="95" y="304" font-family="JetBrains Mono" font-size="11" fill="var(--navy)">/history</text>
+          <path d="M160 299 L175 299" stroke="var(--blue)" stroke-width="2" marker-end="url(#a-blue)"/>
+        </g>
+
+        <!-- Step 3: client calls one -->
+        <g id="ep-step3" class="svg-node hidden">
+          <!-- client -->
+          <circle cx="430" cy="200" r="26" fill="#fff" stroke="var(--orange)" stroke-width="2"/>
+          <text x="430" y="207" text-anchor="middle" font-size="20">📱</text>
+          <text x="430" y="245" text-anchor="middle" font-size="10" fill="var(--text-secondary)" font-weight="600">your app</text>
+          <!-- request line through POST predict door -->
+          <path d="M404 195 Q380 195 340 200" stroke="var(--orange)" stroke-width="2.5" fill="none" stroke-dasharray="5 3" marker-end="url(#a-orange)"/>
+          <text x="370" y="186" text-anchor="middle" font-size="9" fill="var(--orange)" font-weight="700">POST /predict</text>
+          <!-- response line -->
+          <path d="M340 215 Q380 215 404 210" stroke="var(--green)" stroke-width="2.5" fill="none" stroke-dasharray="5 3" marker-end="url(#a-green)"/>
+          <text x="370" y="232" text-anchor="middle" font-size="9" fill="var(--green)" font-weight="700">JSON response</text>
+        </g>
+
+        <defs>
+          <marker id="a-green" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="var(--green)"/></marker>
+          <marker id="a-orange" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="var(--orange)"/></marker>
+          <marker id="a-blue" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="var(--blue)"/></marker>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="story">
+      <div class="story-step-pill"><span class="pill-num" id="ep-pill">1/3</span> <span>Walkthrough</span></div>
+      <h3 id="ep-title">Your service needs a way in</h3>
+      <p id="ep-body">A FastAPI service is a Python program that listens on a network port. By itself it's just a box — nothing can talk to it yet. We need to give it doors.</p>
+      <div class="story-key"><strong>Key idea</strong><span id="ep-key">A server without endpoints is a locked house. Endpoints are the doors with names on them.</span></div>
+      <div class="controls">
+        <div class="step-dots" id="ep-dots"></div>
+        <button class="btn btn-ghost" id="ep-prev">← Prev</button>
+        <button class="btn btn-fill" id="ep-next">Next →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ LESSON 2: PYDANTIC SCHEMAS ═══════════════ -->
+<section class="lesson">
+  <div class="lesson-header">
+    <div class="lesson-num">2</div>
+    <div>
+      <div class="lesson-eyebrow">Concept Two</div>
+      <div class="lesson-title">Pydantic Schemas — the bouncer at the door</div>
+    </div>
+  </div>
+
+  <div class="lesson-card">
+    <div class="stage" id="stage-pd">
+      <svg viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+        <!-- Server -->
+        <g id="pd-server">
+          <rect x="330" y="160" width="140" height="80" rx="12" fill="var(--navy-dark)"/>
+          <text x="400" y="195" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="#fff">FastAPI</text>
+          <text x="400" y="215" text-anchor="middle" font-size="10" fill="#F5943E">/predict</text>
+        </g>
+
+        <!-- Step 1: messy incoming request -->
+        <g id="pd-step1" class="svg-node hidden">
+          <rect x="40" y="120" width="170" height="160" rx="8" fill="#fff" stroke="var(--border)" stroke-width="1.5"/>
+          <text x="50" y="140" font-family="JetBrains Mono" font-size="10" fill="var(--text-muted)" font-weight="700">REQUEST</text>
+          <text x="50" y="160" font-family="JetBrains Mono" font-size="10" fill="var(--text-primary)">{</text>
+          <text x="60" y="178" font-family="JetBrains Mono" font-size="10" fill="var(--text-primary)">"text": 42,</text>
+          <text x="60" y="196" font-family="JetBrains Mono" font-size="10" fill="var(--text-primary)">"max_tokens": "lots",</text>
+          <text x="60" y="214" font-family="JetBrains Mono" font-size="10" fill="var(--red)">"temp": -5.0</text>
+          <text x="50" y="232" font-family="JetBrains Mono" font-size="10" fill="var(--text-primary)">}</text>
+          <text x="125" y="265" text-anchor="middle" font-size="11" fill="var(--red)" font-weight="700">⚠ junk data!</text>
+          <!-- arrow toward server -->
+          <path d="M210 200 L325 200" stroke="var(--red)" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#a-red)"/>
+        </g>
+
+        <!-- Step 2: schema as bouncer -->
+        <g id="pd-step2" class="svg-node hidden">
+          <!-- bouncer rectangle -->
+          <rect x="240" y="100" width="70" height="220" rx="10" fill="var(--orange)"/>
+          <text x="275" y="135" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#fff" font-weight="600">Schema</text>
+          <text x="275" y="155" text-anchor="middle" font-size="22">🛡</text>
+          <text x="275" y="200" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#fff">text: str</text>
+          <text x="275" y="220" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#fff">tokens: int</text>
+          <text x="275" y="240" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#fff">temp:</text>
+          <text x="275" y="252" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#fff">0–2</text>
+          <text x="275" y="290" text-anchor="middle" font-size="9" fill="#fff" font-weight="700">Pydantic</text>
+          <text x="275" y="305" text-anchor="middle" font-size="9" fill="#fff" opacity=".8">model</text>
+        </g>
+
+        <!-- Step 3: bad request rejected -->
+        <g id="pd-step3" class="svg-node hidden">
+          <rect x="40" y="120" width="170" height="100" rx="8" fill="#fff" stroke="var(--red)" stroke-width="2"/>
+          <text x="50" y="140" font-family="JetBrains Mono" font-size="10" fill="var(--red)" font-weight="700">REQUEST</text>
+          <text x="50" y="160" font-family="JetBrains Mono" font-size="10" fill="var(--red)">temp: -5.0  ✗</text>
+          <text x="50" y="180" font-family="JetBrains Mono" font-size="10" fill="var(--red)">tokens: "lots" ✗</text>
+          <!-- rejected -->
+          <path d="M210 165 L240 175" stroke="var(--red)" stroke-width="2.5" marker-end="url(#a-red)"/>
+          <text x="225" y="155" text-anchor="middle" font-size="14" fill="var(--red)">✗</text>
+          <!-- 422 response back -->
+          <rect x="40" y="260" width="200" height="60" rx="8" fill="var(--red)" opacity=".95"/>
+          <text x="140" y="282" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="#fff">422 Unprocessable</text>
+          <text x="140" y="302" text-anchor="middle" font-size="9" fill="#fff" opacity=".9">"temp must be ≥ 0"</text>
+        </g>
+
+        <!-- Step 4: clean request accepted -->
+        <g id="pd-step4" class="svg-node hidden">
+          <rect x="40" y="120" width="170" height="100" rx="8" fill="#fff" stroke="var(--green)" stroke-width="2"/>
+          <text x="50" y="140" font-family="JetBrains Mono" font-size="10" fill="var(--green)" font-weight="700">REQUEST</text>
+          <text x="50" y="160" font-family="JetBrains Mono" font-size="10" fill="var(--green)">text: "hello"  ✓</text>
+          <text x="50" y="180" font-family="JetBrains Mono" font-size="10" fill="var(--green)">tokens: 50  ✓</text>
+          <text x="50" y="200" font-family="JetBrains Mono" font-size="10" fill="var(--green)">temp: 0.7  ✓</text>
+          <path d="M210 170 L240 195" stroke="var(--green)" stroke-width="2.5" marker-end="url(#a-green2)"/>
+          <path d="M310 200 L325 200" stroke="var(--green)" stroke-width="2.5" marker-end="url(#a-green2)"/>
+          <text x="263" y="155" text-anchor="middle" font-size="14" fill="var(--green)">✓</text>
+          <!-- typed object label -->
+          <text x="320" y="270" font-family="JetBrains Mono" font-size="10" fill="var(--text-secondary)">request.text: str</text>
+          <text x="320" y="285" font-family="JetBrains Mono" font-size="10" fill="var(--text-secondary)">request.tokens: int</text>
+          <text x="320" y="300" font-family="JetBrains Mono" font-size="10" fill="var(--text-secondary)">— auto-typed!</text>
+        </g>
+
+        <defs>
+          <marker id="a-red" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="var(--red)"/></marker>
+          <marker id="a-green2" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="var(--green)"/></marker>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="story">
+      <div class="story-step-pill"><span class="pill-num" id="pd-pill">1/4</span> <span>Walkthrough</span></div>
+      <h3 id="pd-title">Anyone can send anything</h3>
+      <p id="pd-body">Once your endpoint is public, the internet sends it everything — including garbage. Strings where you wanted numbers. Missing fields. Values out of range. Without protection, every endpoint is a foot-gun.</p>
+      <div class="story-key"><strong>Key idea</strong><span id="pd-key">Never trust input. Always validate at the door.</span></div>
+      <div class="controls">
+        <div class="step-dots" id="pd-dots"></div>
+        <button class="btn btn-ghost" id="pd-prev">← Prev</button>
+        <button class="btn btn-fill" id="pd-next">Next →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ LESSON 3: LOADING SERIALISED AGENTS ═══════════════ -->
+<section class="lesson">
+  <div class="lesson-header">
+    <div class="lesson-num">3</div>
+    <div>
+      <div class="lesson-eyebrow">Concept Three</div>
+      <div class="lesson-title">Loading Serialised Agents — your model, ready in memory</div>
+    </div>
+  </div>
+
+  <div class="lesson-card">
+    <div class="stage" id="stage-ld">
+      <svg viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+        <!-- Step 1: disk file -->
+        <g id="ld-step1" class="svg-node hidden">
+          <!-- disk -->
+          <rect x="80" y="160" width="120" height="80" rx="6" fill="#fff" stroke="var(--text-muted)" stroke-width="2"/>
+          <text x="140" y="185" text-anchor="middle" font-size="20">💾</text>
+          <text x="140" y="210" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="var(--navy)" font-weight="600">agent.pkl</text>
+          <text x="140" y="226" text-anchor="middle" font-size="9" fill="var(--text-muted)">trained weights, prompts</text>
+          <!-- arrow + question -->
+          <text x="140" y="270" text-anchor="middle" font-size="10" fill="var(--text-secondary)" font-style="italic">but how does it get into the server?</text>
+        </g>
+
+        <!-- Step 2: bad way - load per request -->
+        <g id="ld-step2" class="svg-node hidden">
+          <!-- disk -->
+          <rect x="40" y="100" width="80" height="50" rx="4" fill="#fff" stroke="var(--text-muted)" stroke-width="1.5"/>
+          <text x="80" y="123" text-anchor="middle" font-size="14">💾</text>
+          <text x="80" y="142" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--navy)">agent.pkl</text>
+          <!-- three requests, each loads -->
+          <text x="200" y="80" text-anchor="middle" font-size="11" fill="var(--red)" font-weight="700">😩 Loaded every request</text>
+          <g>
+            <rect x="160" y="100" width="100" height="32" rx="6" fill="var(--red)" opacity=".15" stroke="var(--red)"/>
+            <text x="210" y="120" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--red)">request 1 · 3.4s</text>
+            <path d="M125 125 L160 116" stroke="var(--red)" stroke-width="1.5"/>
+          </g>
+          <g>
+            <rect x="160" y="160" width="100" height="32" rx="6" fill="var(--red)" opacity=".15" stroke="var(--red)"/>
+            <text x="210" y="180" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--red)">request 2 · 3.5s</text>
+            <path d="M125 135 L160 176" stroke="var(--red)" stroke-width="1.5"/>
+          </g>
+          <g>
+            <rect x="160" y="220" width="100" height="32" rx="6" fill="var(--red)" opacity=".15" stroke="var(--red)"/>
+            <text x="210" y="240" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--red)">request 3 · 3.6s</text>
+            <path d="M125 145 L160 236" stroke="var(--red)" stroke-width="1.5"/>
+          </g>
+          <!-- summary -->
+          <rect x="290" y="160" width="180" height="80" rx="8" fill="var(--red)" opacity=".1" stroke="var(--red)"/>
+          <text x="380" y="185" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="var(--red)">Slow!</text>
+          <text x="380" y="205" text-anchor="middle" font-size="10" fill="var(--text-secondary)">disk → RAM → disk</text>
+          <text x="380" y="220" text-anchor="middle" font-size="10" fill="var(--text-secondary)">every single time</text>
+        </g>
+
+        <!-- Step 3: load once on startup -->
+        <g id="ld-step3" class="svg-node hidden">
+          <text x="250" y="55" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="var(--navy)">Load once at startup</text>
+          <!-- disk -->
+          <rect x="50" y="100" width="80" height="50" rx="4" fill="#fff" stroke="var(--text-muted)" stroke-width="1.5"/>
+          <text x="90" y="123" text-anchor="middle" font-size="14">💾</text>
+          <text x="90" y="142" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--navy)">agent.pkl</text>
+          <!-- single load arrow -->
+          <path d="M130 125 L195 145" stroke="var(--orange)" stroke-width="2.5" marker-end="url(#a-orange-l)"/>
+          <text x="160" y="115" font-size="9" fill="var(--orange)" font-weight="700">@startup</text>
+          <!-- server with model inside -->
+          <rect x="200" y="100" width="220" height="200" rx="12" fill="var(--navy-dark)"/>
+          <text x="310" y="130" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="#fff">Server (in RAM)</text>
+          <rect x="225" y="150" width="170" height="60" rx="8" fill="var(--orange)"/>
+          <text x="310" y="175" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#fff">Agent</text>
+          <text x="310" y="194" text-anchor="middle" font-size="10" fill="#fff" opacity=".9">loaded · waiting</text>
+          <!-- requests now fast -->
+          <text x="310" y="232" text-anchor="middle" font-size="9" fill="var(--green-light)">req 1 · 80ms ✓</text>
+          <text x="310" y="248" text-anchor="middle" font-size="9" fill="var(--green-light)">req 2 · 75ms ✓</text>
+          <text x="310" y="264" text-anchor="middle" font-size="9" fill="var(--green-light)">req 3 · 82ms ✓</text>
+          <text x="310" y="285" text-anchor="middle" font-size="9" fill="#fff" opacity=".7" font-style="italic">no reloading</text>
+        </g>
+
+        <defs>
+          <marker id="a-orange-l" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="var(--orange)"/></marker>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="story">
+      <div class="story-step-pill"><span class="pill-num" id="ld-pill">1/3</span> <span>Walkthrough</span></div>
+      <h3 id="ld-title">Your agent lives on disk</h3>
+      <p id="ld-body">After you train or configure an agent, it's saved as a file — pickled Python, a JSON config, or a model checkpoint. The question is: how do you get that file working inside a live server that's handling user requests?</p>
+      <div class="story-key"><strong>Key idea</strong><span id="ld-key">Files on disk are dormant. Agents in memory are alive.</span></div>
+      <div class="controls">
+        <div class="step-dots" id="ld-dots"></div>
+        <button class="btn btn-ghost" id="ld-prev">← Prev</button>
+        <button class="btn btn-fill" id="ld-next">Next →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ LESSON 4: ASYNC ═══════════════ -->
+<section class="lesson">
+  <div class="lesson-header">
+    <div class="lesson-num">4</div>
+    <div>
+      <div class="lesson-eyebrow">Concept Four</div>
+      <div class="lesson-title">Async Handlers — serving many users at once</div>
+    </div>
+  </div>
+
+  <div class="lesson-card">
+    <div class="stage" id="stage-as">
+      <svg viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+        <!-- Step 1: sync — one at a time -->
+        <g id="as-step1" class="svg-node hidden">
+          <text x="250" y="40" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="var(--navy)">Synchronous (blocking)</text>
+          <!-- queue -->
+          <g>
+            <circle cx="60" cy="200" r="18" fill="#fff" stroke="var(--text-muted)"/>
+            <text x="60" y="206" text-anchor="middle" font-size="14">👤</text>
+          </g>
+          <g>
+            <circle cx="105" cy="200" r="18" fill="#fff" stroke="var(--text-muted)" opacity=".7"/>
+            <text x="105" y="206" text-anchor="middle" font-size="14" opacity=".7">👤</text>
+          </g>
+          <g>
+            <circle cx="150" cy="200" r="18" fill="#fff" stroke="var(--text-muted)" opacity=".4"/>
+            <text x="150" y="206" text-anchor="middle" font-size="14" opacity=".4">👤</text>
+          </g>
+          <text x="105" y="245" text-anchor="middle" font-size="10" fill="var(--text-secondary)" font-style="italic">waiting...</text>
+
+          <!-- server -->
+          <rect x="220" y="160" width="150" height="80" rx="12" fill="var(--navy-dark)"/>
+          <text x="295" y="190" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="#fff">1 worker</text>
+          <text x="295" y="212" text-anchor="middle" font-size="10" fill="#F5943E">busy with user 1</text>
+          <text x="295" y="226" text-anchor="middle" font-size="10" fill="#F5943E">for 2.5s ⏳</text>
+
+          <!-- timeline -->
+          <rect x="380" y="170" width="20" height="50" rx="3" fill="var(--orange)"/>
+          <rect x="405" y="170" width="20" height="50" rx="3" fill="var(--border)"/>
+          <rect x="430" y="170" width="20" height="50" rx="3" fill="var(--border)"/>
+          <text x="415" y="245" text-anchor="middle" font-size="9" fill="var(--text-muted)">queued</text>
+
+          <text x="295" y="290" text-anchor="middle" font-size="11" fill="var(--red)" font-weight="700">Users 2 &amp; 3 stuck</text>
+        </g>
+
+        <!-- Step 2: async — concurrent -->
+        <g id="as-step2" class="svg-node hidden">
+          <text x="250" y="40" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="var(--navy)">Async (concurrent)</text>
+          <!-- three users -->
+          <g>
+            <circle cx="60" cy="120" r="18" fill="#fff" stroke="var(--orange)" stroke-width="2"/>
+            <text x="60" y="126" text-anchor="middle" font-size="14">👤</text>
+            <path d="M82 120 L210 165" stroke="var(--orange)" stroke-width="2" marker-end="url(#a-or-a)"/>
+          </g>
+          <g>
+            <circle cx="60" cy="200" r="18" fill="#fff" stroke="var(--orange)" stroke-width="2"/>
+            <text x="60" y="206" text-anchor="middle" font-size="14">👤</text>
+            <path d="M82 200 L210 200" stroke="var(--orange)" stroke-width="2" marker-end="url(#a-or-a)"/>
+          </g>
+          <g>
+            <circle cx="60" cy="280" r="18" fill="#fff" stroke="var(--orange)" stroke-width="2"/>
+            <text x="60" y="286" text-anchor="middle" font-size="14">👤</text>
+            <path d="M82 280 L210 235" stroke="var(--orange)" stroke-width="2" marker-end="url(#a-or-a)"/>
+          </g>
+          <!-- server -->
+          <rect x="215" y="155" width="160" height="100" rx="12" fill="var(--navy-dark)"/>
+          <text x="295" y="180" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="#fff">async def</text>
+          <text x="295" y="200" text-anchor="middle" font-size="10" fill="#F5943E">handles all 3</text>
+          <text x="295" y="217" text-anchor="middle" font-size="10" fill="#F5943E">while waiting</text>
+          <text x="295" y="235" text-anchor="middle" font-size="10" fill="#F5943E">on each LLM call</text>
+          <!-- timeline -->
+          <rect x="395" y="160" width="60" height="14" rx="3" fill="var(--green)"/>
+          <rect x="395" y="178" width="60" height="14" rx="3" fill="var(--green)"/>
+          <rect x="395" y="196" width="60" height="14" rx="3" fill="var(--green)"/>
+          <text x="425" y="230" text-anchor="middle" font-size="9" fill="var(--green)" font-weight="700">all in parallel</text>
+          <text x="295" y="290" text-anchor="middle" font-size="11" fill="var(--green)" font-weight="700">✓ no one waits in line</text>
+        </g>
+
+        <!-- Step 3: why it works -->
+        <g id="as-step3" class="svg-node hidden">
+          <text x="250" y="50" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="var(--navy)">Why async wins for AI</text>
+          <!-- waiting bar -->
+          <rect x="60" y="100" width="380" height="36" rx="6" fill="var(--bg-light)" stroke="var(--border)"/>
+          <text x="70" y="93" font-size="9" fill="var(--text-muted)" font-weight="700">A SINGLE LLM CALL</text>
+          <rect x="62" y="102" width="20" height="32" rx="3" fill="var(--orange)"/>
+          <rect x="82" y="102" width="340" height="32" fill="var(--bg)"/>
+          <rect x="422" y="102" width="20" height="32" rx="3" fill="var(--orange)"/>
+          <text x="70" y="122" font-size="9" fill="#fff" font-weight="700">cpu</text>
+          <text x="250" y="124" text-anchor="middle" font-size="11" fill="var(--text-muted)" font-style="italic">waiting on network · ~2 seconds</text>
+          <text x="432" y="122" font-size="9" fill="#fff" font-weight="700">cpu</text>
+          <!-- explanation -->
+          <text x="250" y="180" text-anchor="middle" font-size="12" fill="var(--text-primary)" font-weight="600">Most of the time, your server is doing nothing.</text>
+          <text x="250" y="200" text-anchor="middle" font-size="11" fill="var(--text-secondary)">It's just waiting for the LLM API to respond.</text>
+          <!-- comparison -->
+          <rect x="80" y="230" width="160" height="80" rx="10" fill="var(--red)" opacity=".1" stroke="var(--red)"/>
+          <text x="160" y="252" text-anchor="middle" font-size="11" fill="var(--red)" font-weight="700">sync def</text>
+          <text x="160" y="272" text-anchor="middle" font-size="10" fill="var(--text-secondary)">sits idle</text>
+          <text x="160" y="288" text-anchor="middle" font-size="10" fill="var(--text-secondary)">— blocks others</text>
+          <rect x="260" y="230" width="160" height="80" rx="10" fill="var(--green)" opacity=".1" stroke="var(--green)"/>
+          <text x="340" y="252" text-anchor="middle" font-size="11" fill="var(--green)" font-weight="700">async def</text>
+          <text x="340" y="272" text-anchor="middle" font-size="10" fill="var(--text-secondary)">uses the wait</text>
+          <text x="340" y="288" text-anchor="middle" font-size="10" fill="var(--text-secondary)">to serve others</text>
+        </g>
+
+        <defs>
+          <marker id="a-or-a" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="var(--orange)"/></marker>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="story">
+      <div class="story-step-pill"><span class="pill-num" id="as-pill">1/3</span> <span>Walkthrough</span></div>
+      <h3 id="as-title">One user at a time = a slow website</h3>
+      <p id="as-body">If your server handles requests one by one (synchronously), then while it's busy waiting for an LLM to answer, everyone else queues up. With three users and 2-second LLM calls, the third person waits 6 seconds before you even start their request.</p>
+      <div class="story-key"><strong>Key idea</strong><span id="as-key">Synchronous code is a single cashier. Async code is a cashier who takes orders, then keeps taking new orders while the kitchen cooks.</span></div>
+      <div class="controls">
+        <div class="step-dots" id="as-dots"></div>
+        <button class="btn btn-ghost" id="as-prev">← Prev</button>
+        <button class="btn btn-fill" id="as-next">Next →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="lesson-footer">
+  Lesson 2 of 4 · <a href="#">Up next: MLflow for tracking experiments</a>
+</div>
+
+<script>
+function makeLesson({prefix, steps}){
+  const dotsEl=document.getElementById(prefix+'-dots');
+  const titleEl=document.getElementById(prefix+'-title');
+  const bodyEl=document.getElementById(prefix+'-body');
+  const keyEl=document.getElementById(prefix+'-key');
+  const pillEl=document.getElementById(prefix+'-pill');
+  const prevBtn=document.getElementById(prefix+'-prev');
+  const nextBtn=document.getElementById(prefix+'-next');
+  const stage=document.getElementById('stage-'+prefix);
+  let idx=0;
+  steps.forEach((_,i)=>{
+    const d=document.createElement('div');
+    d.className='step-dot'+(i===0?' active':'');
+    d.addEventListener('click',()=>go(i));
+    dotsEl.appendChild(d);
+  });
+  function render(){
+    const s=steps[idx];
+    titleEl.textContent=s.title;
+    bodyEl.textContent=s.body;
+    keyEl.textContent=s.key;
+    pillEl.textContent=`${idx+1}/${steps.length}`;
+    titleEl.classList.remove('fade-in');void titleEl.offsetWidth;titleEl.classList.add('fade-in');
+    bodyEl.classList.remove('fade-in');void bodyEl.offsetWidth;bodyEl.classList.add('fade-in');
+    [...dotsEl.children].forEach((d,i)=>d.className='step-dot'+(i===idx?' active':i<idx?' done':''));
+    // collect all svg-node ids from this prefix
+    const all=stage.querySelectorAll('.svg-node');
+    all.forEach(el=>el.classList.add('hidden'));
+    // show visible at this step
+    s.showIds.forEach(id=>{const el=stage.querySelector('#'+id);if(el)el.classList.remove('hidden');});
+    prevBtn.disabled=idx===0;
+    nextBtn.textContent=idx===steps.length-1?'↺ Restart':'Next →';
+  }
+  function go(i){idx=(i+steps.length)%steps.length;render();}
+  prevBtn.addEventListener('click',()=>go(idx-1));
+  nextBtn.addEventListener('click',()=>{if(idx===steps.length-1)go(0);else go(idx+1);});
+  render();
+}
+
+makeLesson({
+  prefix:'ep',
+  steps:[
+    {title:"Your service needs a way in",
+     body:"A FastAPI service is a Python program that listens on a network port. By itself it's just a box — nothing can talk to it yet. We need to give it doors.",
+     key:"A server without endpoints is a locked house. Endpoints are the doors with names on them.",
+     showIds:['ep-step1']},
+    {title:"Endpoints are URL paths",
+     body:"Each endpoint is a URL + an HTTP method (GET, POST, etc). /health checks if the server is alive. /predict accepts text and returns a prediction. /history shows past calls. In FastAPI, you write each one as a normal Python function decorated with @app.get or @app.post.",
+     key:"One endpoint = one purpose. Don't make /predict also fetch your laundry.",
+     showIds:['ep-step1','ep-step2']},
+    {title:"Clients call them over HTTP",
+     body:"Now any client — a website, a phone app, another service — can make an HTTP request to your endpoint. Your function runs, returns a result, and FastAPI sends it back as JSON. That's it. You've turned a Python function into a web service.",
+     key:"Public endpoint + JSON response = your AI is now reachable by anyone with an internet connection.",
+     showIds:['ep-step1','ep-step2','ep-step3']}
+  ]
+});
+
+makeLesson({
+  prefix:'pd',
+  steps:[
+    {title:"Anyone can send anything",
+     body:"Once your endpoint is public, the internet sends it everything — including garbage. Strings where you wanted numbers. Missing fields. Values out of range. Without protection, every endpoint is a foot-gun.",
+     key:"Never trust input. Always validate at the door.",
+     showIds:['pd-server','pd-step1']},
+    {title:"Pydantic: a schema is a contract",
+     body:"You define a Pydantic class that describes exactly what valid input looks like: each field, its type, and any rules (temp between 0 and 2, tokens must be positive, etc). FastAPI uses this class as a bouncer at the door.",
+     key:"Write the contract once. FastAPI enforces it forever.",
+     showIds:['pd-server','pd-step2']},
+    {title:"Bad data gets rejected automatically",
+     body:"When a request arrives with wrong types or invalid values, Pydantic refuses to let it in. FastAPI sends back a 422 error with a clear message — 'temp must be ≥ 0' — without ever running your code. Your handler stays clean.",
+     key:"You write zero validation code and still catch every malformed request.",
+     showIds:['pd-server','pd-step2','pd-step3']},
+    {title:"Good data arrives fully typed",
+     body:"Clean requests sail through and arrive at your function as a typed Python object. Your IDE autocompletes the fields, the types are guaranteed, and you can focus on logic instead of parsing JSON by hand.",
+     key:"Validation, parsing, and type-safety — all from one class definition.",
+     showIds:['pd-server','pd-step2','pd-step4']}
+  ]
+});
+
+makeLesson({
+  prefix:'ld',
+  steps:[
+    {title:"Your agent lives on disk",
+     body:"After you train or configure an agent, it's saved as a file — pickled Python, a JSON config, or a model checkpoint. The question is: how do you get that file working inside a live server that's handling user requests?",
+     key:"Files on disk are dormant. Agents in memory are alive.",
+     showIds:['ld-step1']},
+    {title:"The naive way: load every request",
+     body:"You could open the file, deserialise the agent, and use it inside every handler. But loading takes seconds — and you'd do it for every single request. Your /predict endpoint becomes painfully slow and your server burns CPU reloading the same thing endlessly.",
+     key:"Repeating expensive work on every request is the #1 way to make a fast framework slow.",
+     showIds:['ld-step2']},
+    {title:"The right way: load once at startup",
+     body:"FastAPI has a 'lifespan' hook that runs when the server boots. Load your agent there, stash it in a global variable (or app.state), and reuse it for every request. The first user pays the load cost; everyone after gets answers in milliseconds.",
+     key:"Load expensive things once. Reuse them everywhere.",
+     showIds:['ld-step3']}
+  ]
+});
+
+makeLesson({
+  prefix:'as',
+  steps:[
+    {title:"One user at a time = a slow website",
+     body:"If your server handles requests one by one (synchronously), then while it's busy waiting for an LLM to answer, everyone else queues up. With three users and 2-second LLM calls, the third person waits 6 seconds before you even start their request.",
+     key:"Synchronous code is a single cashier serving one customer all the way through.",
+     showIds:['as-step1']},
+    {title:"Async lets the server multitask",
+     body:"Mark your function 'async def' and use 'await' for slow operations. Now while one request is waiting on the LLM, the server can start handling the next one. All three users get served at roughly the same time.",
+     key:"async = take the order, start cooking, take the next order while the first one finishes.",
+     showIds:['as-step2']},
+    {title:"Why async is perfect for AI workloads",
+     body:"AI handlers spend most of their time *waiting* — for an API call, for a database, for a file. The CPU is idle. Async code spots those waits and uses them productively, swapping in other requests instead of sitting still.",
+     key:"For AI services, async isn't a nice-to-have — it's how you scale from 1 user to 1,000.",
+     showIds:['as-step3']}
+  ]
+});
+</script>
+
+</body>
+</html>
